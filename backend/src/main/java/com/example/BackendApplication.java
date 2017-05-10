@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringBootAndVuejsApplication {
+public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringBootAndVuejsApplication.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 }

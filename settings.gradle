@@ -1,1 +1,3 @@
+rootProject.name = 'spring-boot-and-vuejs'
 include 'frontend'
+include 'backend'

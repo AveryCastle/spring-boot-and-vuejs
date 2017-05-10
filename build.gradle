@@ -1,29 +1,123 @@
+def gulpProjects = [project(':frontend')]
+
 buildscript {
 	ext {
 		springBootVersion = '1.5.3.RELEASE'
 	}
 	repositories {
 		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
+		classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
 	}
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
+subprojects {
+	group 'com.example'
+	version '0.0.1-SNAPSHOT'
 
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
+	apply plugin: 'java'
+	apply plugin: 'maven'
+	apply plugin: 'idea'
 
-repositories {
-	mavenCentral()
+	def vJavaLang = '1.8'
+	targetCompatibility = vJavaLang
+	sourceCompatibility = vJavaLang
+
+	repositories {
+		mavenCentral()
+	}
 }
 
+project(':frontend') {
+	description = "frontend ui module"
+}
 
-dependencies {
-	compile('org.springframework.boot:spring-boot-starter-web')
-	runtime('org.springframework.boot:spring-boot-devtools')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+project(':backend') {
+	apply plugin: 'org.springframework.boot'
+
+	description = "backend server module"
+
+	dependencies {
+		compile project(':frontend')
+
+		compile('org.springframework.boot:spring-boot-starter-web')
+		runtime('org.springframework.boot:spring-boot-devtools')
+		testCompile('org.springframework.boot:spring-boot-starter-test')
+	}
+}
+
+configure(gulpProjects){
+	apply plugin: "com.moowork.node"
+	apply plugin: "com.moowork.gulp"
+	
+	def jsBuildDir = 'dist/'
+	jar {
+		from jsBuildDir
+		eachFile { details ->
+			details.path = details.path.startsWith('META-INF') ?: 'static/'+details.path
+		}
+		includeEmptyDirs false
+	}
+	node {
+		version = '7.9.0'
+		npmVersion = '4.2.0'
+		download = true
+	}
+
+	clean {
+		delete jsBuildDir
+	}
+
+	gulp_build.dependsOn 'installGulp', 'npmInstall'
+	jar.dependsOn gulp_build
+
+//	/**
+//	 * 서버 배포환경에서 node_modules 다운로드
+//	 * local 에서 node_modules를 새로 다운 받으려면 npmInstall 사용
+//	 */
+//	task npmInstallProduction(type: NpmTask) {
+//		args = ['install', '--production']
+//	}
+//
+//	/**
+//	 * local 개발 시 사용
+//	 * nodejs 설치 -> node_modules 다운로드 -> webpack-dev-server 실행
+//	 * front-end 소스를 webpack-dev-server 가 서비스한다(java를 빌드할 필요없음)
+//	 */
+//	task npmRunDev(type: NpmTask) {
+//		args = ['run', 'dev']
+//	}
+//
+//	/**
+//	 * front-end source 빌드
+//	 * dist 폴더에 소스를 빌드함
+//	 * npmRunDev로 로컬 실행하면 소스 수정시 알아서 빌드 하지만 순전히 소스 빌드만 수행 하고자 할때 사용
+//	 */
+//	task npmBuild(type: NpmTask) {
+//		args = ['run', 'build']
+//	}
+//
+//
+//	task copyDistToStatic(type: Copy) {
+//		from ("${project.projectDir}/dist/")
+//		into ("${project.projectDir}/src/main/resources/static/")
+//		includeEmptyDirs = true
+//	}
+//
+//	/**
+//	 * 서버 배포시 사용
+//	 * nodejs 설치 -> node_modules 다운로드 -> front-end source 빌드 -> resource/static 복사
+//	 */
+//	task frontEndBuild << {
+//		nodeSetup.execute()
+//		npmInstallProduction.execute()
+//		npmBuild.execute()
+//		copyDistToStatic.execute()
+//	}
 }
