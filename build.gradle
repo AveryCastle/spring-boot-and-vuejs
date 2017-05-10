@@ -13,7 +13,6 @@ buildscript {
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 		classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
-		classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
 	}
 }
 
@@ -54,7 +53,6 @@ project(':backend') {
 
 configure(gulpProjects){
 	apply plugin: "com.moowork.node"
-	apply plugin: "com.moowork.gulp"
 	
 	def jsBuildDir = 'dist/'
 	jar {
@@ -73,9 +71,6 @@ configure(gulpProjects){
 	clean {
 		delete jsBuildDir
 	}
-
-	gulp_build.dependsOn 'installGulp', 'npmInstall'
-	jar.dependsOn gulp_build
 
 //	/**
 //	 * 서버 배포환경에서 node_modules 다운로드
@@ -99,9 +94,9 @@ configure(gulpProjects){
 //	 * dist 폴더에 소스를 빌드함
 //	 * npmRunDev로 로컬 실행하면 소스 수정시 알아서 빌드 하지만 순전히 소스 빌드만 수행 하고자 할때 사용
 //	 */
-//	task npmBuild(type: NpmTask) {
-//		args = ['run', 'build']
-//	}
+	task npmBuild(type: NpmTask) {
+		args = ['run', 'build']
+	}
 //
 //
 //	task copyDistToStatic(type: Copy) {
@@ -120,4 +115,6 @@ configure(gulpProjects){
 //		npmBuild.execute()
 //		copyDistToStatic.execute()
 //	}
+
+	jar.dependsOn clean, npmBuild
 }
